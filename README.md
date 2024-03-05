@@ -1,20 +1,29 @@
-# Rest API with MySQL 
+# Real-time Crypto Price Alert Service
+The project structure is a simple CRUD operations application, it utilizes the [three-tier architecture](https://www.ibm.com/topics/three-tier-architecture) which emphasizes the separation between message tier and business tier,
 
-| Methods	| Urls	                | Actions
-| --------- | --------------------- | ---------------------- |
-| GET       | api/tutorials         | get all Tutorials
-| GET       | api/tutorials/:id     | get Tutorial by id
-| POST      | api/tutorials         | add new Tutorial
-| PUT       | api/tutorials/:id     | update Tutorial by id
-| DELETE    | api/tutorials/:id     | remove Tutorial by id
+Within the time constraints, I managed to implement the above architecture, including connecting to Websocket, connecting to MariaDB
 
-| Methods	| Urls	                | Actions
-| --------- | --------------------- | ---------------------- |
-| GET       | api/employees         | get all Employees
-| GET       | api/employees/:id     | get Employee by id
-| POST      | api/employees         | add new Employee
-| PUT       | api/employees/:id     | update Employee by id
-| DELETE    | api/employees/:id     | remove Employee by id
+## Tables Structure
+```sql
+
+CREATE TABLE `consecutive_increases` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `currency_pair` varchar(20) DEFAULT NULL,
+  `first_price` decimal(20,10) DEFAULT NULL,
+  `second_price` decimal(20,10) DEFAULT NULL,
+  `first_timestamp` datetime DEFAULT NULL,
+  `second_timestamp` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `price_alerts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `currency_pair` varchar(20) DEFAULT NULL,
+  `price` decimal(20,10) DEFAULT NULL,
+  `timestamp` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
 
 
 ## Project Structure
@@ -25,9 +34,7 @@
 ├── server.ts
 ├── src
 │   ├── controllers
-│   │   ├── employee.controller.ts
-│   │   ├── home.controller.ts
-│   │   └── tutorial.controller.ts
+│   │   └── home.controller.ts
 │   ├── db
 │   │   └── index.ts
 │   ├── index.ts
@@ -36,20 +43,21 @@
 │   ├── middlewares
 │   │   └── auth.validation.ts
 │   ├── models
-│   │   ├── employee.model.ts
-│   │   └── tutorial.model.ts
+│   │   ├── consecutive_increases.model.ts
+│   │   └── price_alerts.model.ts
 │   ├── repositories
-│   │   ├── employee.repository.ts
-│   │   └── tutorial.repository.ts
+│   │   ├── consecutive_increases.repository.ts
+│   │   └── price_alerts.repository.ts
 │   ├── routes
-│   │   ├── employee.router.ts
 │   │   ├── home.routes.ts
-│   │   ├── index.ts
-│   │   └── tutorial.routes.ts
-│   └── services
-│       ├── employee.service.ts
-│       └── tutorial.service.ts
+│   │   └── index.ts
+│   ├── services
+│   │   ├── consecutive_increases.service.ts
+│   │   └── price_alerts.service.ts
+│   └── utils
+│       └── websocket.ts
 └── tsconfig.json
+
 ```
 
 
