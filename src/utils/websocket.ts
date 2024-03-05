@@ -1,16 +1,20 @@
 import WebSocket, { RawData } from "ws";
 import priceAlertService from "../services/price_alerts.service";
-import consecutiveIncreasesService from '../services/consecutive_increases.service'
+import consecutiveIncreasesService from "../services/consecutive_increases.service";
+
+const wss = new WebSocket.Server({ port: 2055 }, () => {
+  console.log("server started");
+});
 
 // Connect to Poloniex WebSocket API
-const ws = new WebSocket(
+const poloniex_ws = new WebSocket(
   "wss://futures-apiws.poloniex.com/endpoint?token=DcXijCbKcWFew_i0BS8y6UNmBtlHW3UAvR4Nx4VADIn15tt-jDqMbYWNZ2II5fSnrClCBBv6dTDc8PMFHz-H6nLEAXbyrwF_nIpeynwBSXdfJXlmBNYhuWMGfZAja_q_-wgHjBcT7RhvJVwiLf8PgfnlXwiMtKLIY95Cnsz7zKo=.U9BXaJjXO4rLasHkx3JRzQ==&acceptUserMessage=true"
 );
 
-ws.on("open", () => {
+poloniex_ws.on("open", () => {
   console.log("Connected to Poloniex WebSocket API");
 
-  ws.send(
+  poloniex_ws.send(
     JSON.stringify({
       id: 1545910660739, //The id should be an unique value
       type: "subscribe",
@@ -23,46 +27,24 @@ ws.on("open", () => {
 
 let previousPrice: number | null = null;
 
-ws.on("message", (payload: RawData) => {
-  const message = JSON.parse(payload.toString());
-  const { data, subject, topic, type } = message;
+wss.on("connection", (ws: WebSocket) => {
+  poloniex_ws.on("message", (payload: RawData) => {
+    const message = JSON.parse(payload.toString());
+    const { data, subject, topic, type } = message;
 
-
-  console.log(message);
-
-  // Handle incoming price update messages
-  if (message.event === "update") {
-    const price = parseFloat(data.price);
-    const currencyPair = data.currencyPair;
-    const timestamp = new Date();
-
-    // Check for consecutive price increases
-    if (previousPrice !== null && price > previousPrice) {
-      // Store event in MariaDB
-
-      //priceAlertService.create(data)
-
-      consecutiveIncreasesService.create(data)
-    }
-
-    // Update previous price
-    previousPrice = price;
-
-    // Notify clients of price increase
-    if (price > previousPrice) {
-      // Implement WebSocket server logic to notify clients
-    }
-
-    // // Store price alert in MariaDB
-    // const query = 'INSERT INTO price_alerts (currency_pair, price, timestamp) VALUES (?, ?, ?)';
-    // const values = [currencyPair, price, timestamp];
-    // db.query(query, values, (err, result) => {
-    //   if (err) throw err;
-    //   console.log('Price alert stored:', result.insertId);
-    // });
-  }
+    // check if the price was changed then;
+    //    update the database
+    //    notify the connected client
+    wss.clients.forEach(function (client) {
+      client.send(JSON.stringify(data));
+    });
+  });
 });
 
-ws.on("error", (err) => {
+wss.on("listening", (ws: any) => {
+  console.log("WebSocket Server listening on 2055");
+});
+
+poloniex_ws.on("error", (err) => {
   console.error("WebSocket error:", err);
 });

@@ -9,7 +9,7 @@ class ConsecutiveIncreasesRepository implements ICrudRepository<ConsecutiveIncre
 
 
     
-      const values = [currencyPair, previousPrice, price, timestamp, timestamp] = payload;
+      //const values = [currencyPair, previousPrice, price, timestamp, timestamp] = payload;
       // db.query(query, values, (err, result) => {
       //   if (err) throw err;
       //   console.log('Consecutive increase stored:', result.insertId);
