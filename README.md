@@ -1,4 +1,5 @@
 # Real-time Crypto Price Alert Service
+The project structure is a simple CRUD operations application, it utilizes the [three-tier architecture](https://www.ibm.com/topics/three-tier-architecture) which emphasizes the separation between message tier and business tier,
 
 
 ## Project Structure
