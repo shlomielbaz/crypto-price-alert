@@ -57,8 +57,11 @@ CREATE TABLE `price_alerts` (
 │   └── utils
 │       └── websocket.ts
 └── tsconfig.json
-
 ```
+
+## Snapshots:
+The connected client gets notified from server
+<img width="1211" alt="image" src="https://github.com/shlomielbaz/crypto-price-alert/assets/426076/0ece72ef-9576-429b-8532-78347aa3c830">
 
 
 
