@@ -1,24 +1,13 @@
 {
-  "name": "node-js-typescript-mysql-rest-api",
+  "name": "crypto-price-alerts",
   "version": "1.0.0",
   "description": "Real-time Crypto Price Alert Service",
   "main": "server.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node server.ts",
-    "start": "tsc && node ./build/server.js"
+    "dev": "tsc -w",
+    "start": "ts-node server.ts"
   },
-  "keywords": [
-    "nodejs",
-    "typescript",
-    "express",
-    "mysql",
-    "mysql2",
-    "restapi",
-    "rest",
-    "api",
-    "crud"
-  ],
   "author": "https://github.com/shlomielbaz",
   "license": "ISC",
   "devDependencies": {
