@@ -1,0 +1,53 @@
+version: "3.4"
+services:
+  api-service:
+    build:
+      context: ./api-service/
+      dockerfile: Dockerfile
+    container_name: api-service
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    networks:
+      - node-network
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - WEBHOOK_URL=https://webhook.site/93bedc07-7faf-4674-938a-0a770ed30b57
+    command: npm start
+
+  ui-service:
+    build:
+      context: ./ui-service/
+      dockerfile: Dockerfile
+    container_name: ui-service
+    restart: unless-stopped
+    ports:
+      - 4000:4000
+    networks:
+      - node-network
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - PORT=4000
+    command: npm start
+
+  nginx-service:
+    build:
+      context: ./nginx-service/
+    container_name: nginx-service
+    restart: always
+    # tty: true
+    ports:
+      - 8080:80
+    networks:
+      - node-network
+    depends_on:
+       - api-service
+       - ui-service
+
+networks:
+  node-network:
+    driver: bridge
