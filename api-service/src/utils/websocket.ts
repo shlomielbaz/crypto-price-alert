@@ -8,43 +8,33 @@ const wss = new WebSocket.Server({ port: 2055 }, () => {
 
 // Connect to Poloniex WebSocket API
 const poloniex_ws = new WebSocket(
-  "wss://futures-apiws.poloniex.com/endpoint?token=DcXijCbKcWFew_i0BS8y6UNmBtlHW3UAvR4Nx4VADIn15tt-jDqMbYWNZ2II5fSnrClCBBv6dTDc8PMFHz-H6nLEAXbyrwF_nIpeynwBSXdfJXlmBNYhuWMGfZAja_q_-wgHjBcT7RhvJVwiLf8PgfnlXwiMtKLIY95Cnsz7zKo=.U9BXaJjXO4rLasHkx3JRzQ==&acceptUserMessage=true"
+  "wss://futures-apiws.poloniex.com/endpoint?token=DcXijCbKcWFew_i0BS8y6UNmBtlHW3UAvR4Nx4VADIn15tt-jDqMbYWNZ2II5fSnrClCBBv6dTDc8PMFHz-H6vImI9MopvnqMmvaDqJJdVaMUhkXZG9ak2MGfZAja_q_-wgHjBcT7RhvJVwiLf8Pgae7d1M_0fxKUXJQ-4pi3zk=.FcGFPRxtf_w20GpwSc-w9A==&acceptUserMessage=true"
 );
 
 poloniex_ws.on("open", () => {
   console.log("Connected to Poloniex WebSocket API");
-
-  // poloniex_ws.send(
-  //   JSON.stringify({
-  //     id: 1545910660739, //The id should be an unique value
-  //     type: "subscribe",
-  //     topic: "/contractMarket/ticker:BTCUSDTPERP", //Subscribed topic. Some topics support subscribe to the data of multiple trading pairs through ",".
-  //     privateChannel: false, //Adopt the private channel or not. Set as false by default.
-  //     response: true, //Whether the server needs to return the receipt information of this subscription or not. Set as false by default.
-  //   })
-  // );
-
-  // poloniex_ws.send(
-  //   JSON.stringify({
-  //     event: "subscribe",
-  //     channel: ["candles_minute_1"],
-  //     symbols: ["btc_usdt"],
-  //   })
-  // );
 });
 
 let previousPrice: number | null = null;
-const connections = {};
+const connections: any = {};
 
 wss.on("connection", (ws: WebSocket, req) => {
+  const symbol: string = (req.url && req.url?.split("ticker:")[1]) || "";
 
-  console.log(`Conn Url ${req.url?.indexOf('=')}`);
+  if (connections[symbol] == undefined) {
+    connections[symbol] = [];
+  }
+
+  // save the ws client in the symbol's list
+  connections[symbol].push(ws);
+
+  const uid = new Date().getTime();
 
   poloniex_ws.send(
     JSON.stringify({
-      id: 1545910660739, //The id should be an unique value
+      id: uid, //The id should be an unique value
       type: "subscribe",
-      topic: `/${req.url?.split('=')[1]}`, //Subscribed topic. Some topics support subscribe to the data of multiple trading pairs through ",".
+      topic: `/contractMarket/ticker:${symbol}`, //Subscribed topic. Some topics support subscribe to the data of multiple trading pairs through ",".
       privateChannel: false, //Adopt the private channel or not. Set as false by default.
       response: true, //Whether the server needs to return the receipt information of this subscription or not. Set as false by default.
     })
@@ -53,28 +43,28 @@ wss.on("connection", (ws: WebSocket, req) => {
   poloniex_ws.on("message", (payload: RawData) => {
     const message = JSON.parse(payload.toString());
 
-    console.log(message);
+    console.log("poloniex_ws", message);
 
-    // check if the price was changed then;
-    //    update the database
-    //    notify the connected client
+    const { type } = message;
+
+    if (type === "message") {
+      // from the message read the symbole, e.g.: ETHUSDTPERP
+      const {
+        data: { symbol },
+      } = message;
+
+      if (symbol in connections) {
+        // notify the clients in particulary symbol
+        connections[symbol].forEach(function (client: WebSocket) {
+          client.send(JSON.stringify(message));
+        });
+      }
+    }
+
     // wss.clients.forEach(function (client) {
-    //   client.send(JSON.stringify(data));
+    //   client.send(JSON.stringify(message));
     // });
   });
-});
-
-wss.on("message", (payload: RawData) => {
-  console.log(payload);
-  // poloniex_ws.send(
-  //   JSON.stringify({
-  //     id: 1545910660739, //The id should be an unique value
-  //     type: "subscribe",
-  //     topic: "/contractMarket/ticker:BTCUSDTPERP", //Subscribed topic. Some topics support subscribe to the data of multiple trading pairs through ",".
-  //     privateChannel: false, //Adopt the private channel or not. Set as false by default.
-  //     response: true, //Whether the server needs to return the receipt information of this subscription or not. Set as false by default.
-  //   })
-  // );
 });
 
 wss.on("listening", (ws: any) => {
