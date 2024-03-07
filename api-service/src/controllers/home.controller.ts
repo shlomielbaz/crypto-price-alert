@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import axios, { isCancel, AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 
 export function welcome(req: Request, res: Response): Response {
   console.log("Welcome to Tap-tests application.");
@@ -16,13 +16,13 @@ export function register(req: Request, res: Response): Response {
 }
 
 export function symbols(req: Request, res: Response) {
-  axios
+  return axios
     .get("https://futures-api.poloniex.com/api/v2/tickers")
-    .then((response: AxiosResponse<Symbol[]>) => {
-      res.json(response);
+    .then((response) => {
+      const {data} = response.data
+      return res.status(200).json(data);
     })
     .catch(function (error) {
-      // handle error
       console.log(error);
     });
 }

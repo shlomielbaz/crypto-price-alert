@@ -1,9 +1,5 @@
-import express, { Application } from "express";
-import dotenv from "dotenv";
+import app from './src'
 
-dotenv.config();
-
-const app: Application = express();
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
 
 app
